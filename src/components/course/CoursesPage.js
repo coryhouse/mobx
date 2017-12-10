@@ -1,20 +1,10 @@
 import React from "react";
-import { getAllCourses } from "../../api/mockCourseApi";
+import PropTypes from "prop-types";
 import CourseList from "./CourseList";
 
 class CoursesPage extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      courses: []
-    };
-  }
-
   componentDidMount() {
-    if (this.state.courses.length > 0) return;
-    getAllCourses().then(courses => {
-      this.setState({ courses });
-    });
+    if (this.props.courses.length === 0) this.props.loadCourses();
   }
 
   redirectToAddCoursePage = () => {
@@ -32,10 +22,16 @@ class CoursesPage extends React.Component {
           onClick={this.redirectToAddCoursePage}
         />
 
-        <CourseList courses={this.state.courses} />
+        <CourseList courses={this.props.courses} />
       </div>
     );
   }
 }
+
+CoursesPage.propTypes = {
+  courses: PropTypes.array.isRequired,
+  // Used to trigger a load of courses by the parent if no courses have been loaded yet.
+  loadCourses: PropTypes.func.isRequired
+};
 
 export default CoursesPage;
