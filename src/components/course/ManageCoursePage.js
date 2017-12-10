@@ -1,8 +1,9 @@
 import React from "react";
+import PropTypes from "prop-types";
 import { Redirect } from "react-router-dom";
 import CourseForm from "./CourseForm";
 import { getCourseById } from "../../api/mockCourseApi";
-import { getAllAuthors } from "../../api/mockAuthorApi";
+
 import toastr from "toastr";
 
 export class ManageCoursePage extends React.Component {
@@ -10,32 +11,35 @@ export class ManageCoursePage extends React.Component {
     super(props);
 
     this.state = {
-      course: {},
+      course: {
+        id: "",
+        title: "",
+        watchHref: "",
+        authorId: "",
+        length: "",
+        category: ""
+      },
       errors: {},
       saving: false,
-      redirect: false,
-      authors: []
+      redirect: false
     };
   }
 
   componentDidMount() {
+    if (this.props.authors.length === 0) this.props.loadAuthors();
     const courseId = this.props.match.params.id; // from the path `/course/:id`
-
-    getCourseById(courseId).then(course => {
-      this.setState({ course });
-    });
-
-    getAllAuthors().then(authors => {
-      this.setState({ authors });
-    });
+    if (courseId) {
+      getCourseById(courseId).then(course => {
+        this.setState({ course });
+      });
+    }
   }
 
   updateCourseState = event => {
     const field = event.target.name;
-    // Fix: Clone state to avoid manipulating below.
-    let course = Object.assign({}, this.state.course);
+    let course = { ...this.state.course };
     course[field] = event.target.value;
-    return this.setState({ course: course });
+    return this.setState({ course });
   };
 
   courseFormIsValid = () => {
@@ -59,7 +63,7 @@ export class ManageCoursePage extends React.Component {
     }
 
     this.setState({ saving: true });
-    this.props.actions
+    this.props
       .saveCourse(this.state.course)
       .then(() => this.redirect())
       .catch(error => {
@@ -84,11 +88,22 @@ export class ManageCoursePage extends React.Component {
         onChange={this.updateCourseState}
         onSave={this.saveCourse}
         errors={this.state.errors}
-        allAuthors={this.state.authors}
+        authors={this.props.authors.map(author => {
+          return {
+            text: `${author.firstName} ${author.lastName}`,
+            value: author.id
+          };
+        })}
         saving={this.state.saving}
       />
     );
   }
 }
+
+ManageCoursePage.propTypes = {
+  authors: PropTypes.array.isRequired,
+  loadAuthors: PropTypes.func.isRequired,
+  saveCourse: PropTypes.func.isRequired
+};
 
 export default ManageCoursePage;
