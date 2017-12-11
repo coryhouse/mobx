@@ -1,4 +1,3 @@
-// This component handles the App template used on every page.
 import React from "react";
 import { Route } from "react-router-dom";
 import Header from "./common/Header";
