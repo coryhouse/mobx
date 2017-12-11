@@ -14,10 +14,14 @@ class App extends React.Component {
 
     this.state = {
       courses: [],
-      coursesLoaded: false,
       authors: [],
       loading: 0
     };
+  }
+
+  componentDidMount() {
+    this.loadAuthors();
+    this.loadCourses();
   }
 
   loadCourses = () => {
