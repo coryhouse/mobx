@@ -5,7 +5,7 @@ import Header from "./common/Header";
 import HomePage from "./home/HomePage";
 import CoursesPage from "./course/CoursesPage";
 import ManageCoursePage from "./course/ManageCoursePage"; //eslint-disable-line import/no-named-as-default
-import { getAllCourses, saveCourse } from "../api/mockCourseApi";
+import { getAllCourses, saveCourse, getCourseById } from "../api/mockCourseApi";
 import { getAllAuthors } from "../api/mockAuthorApi";
 
 class App extends React.Component {
@@ -14,16 +14,42 @@ class App extends React.Component {
 
     this.state = {
       courses: [],
-      authors: []
+      coursesLoaded: false,
+      authors: [],
+      loading: 0
     };
   }
 
   loadCourses = () => {
-    return getAllCourses().then(courses => this.setState({ courses }));
+    this.updateLoadingCount("+");
+    return getAllCourses().then(courses => {
+      this.updateLoadingCount("-");
+      return this.setState({ courses });
+    });
   };
 
   loadAuthors = () => {
-    return getAllAuthors().then(authors => this.setState({ authors }));
+    this.updateLoadingCount("+");
+    return getAllAuthors().then(authors => {
+      this.updateLoadingCount("-");
+      return this.setState({ authors });
+    });
+  };
+
+  loadCourseById = id => {
+    this.updateLoadingCount("+");
+    return getCourseById(id).then(course => {
+      this.updateLoadingCount("-");
+      return course;
+    });
+  };
+
+  updateLoadingCount = operator => {
+    this.setState(state => {
+      return {
+        loading: operator === "+" ? state.loading + 1 : state.loading - 1
+      };
+    });
   };
 
   onSaveCourse = courseToSave => {
@@ -36,16 +62,17 @@ class App extends React.Component {
   };
 
   render() {
+    const { loading, courses, authors } = this.state;
     return (
       <div className="container-fluid">
-        <Header loading={false} />
+        <Header loading={loading > 0} />
         <Route exact path="/" component={HomePage} />
         {/* pattern for passing props to route via render instead of component: https://github.com/ReactTraining/react-router/issues/4105 */}
         <Route
           path="/courses"
           render={props => (
             <CoursesPage
-              courses={this.state.courses}
+              courses={courses}
               loadCourses={this.loadCourses}
               {...props}
             />
@@ -55,7 +82,8 @@ class App extends React.Component {
           path="/course/:id"
           render={props => (
             <ManageCoursePage
-              authors={this.state.authors}
+              authors={authors}
+              loadCourseById={this.loadCourseById}
               loadAuthors={this.loadAuthors}
               saveCourse={this.onSaveCourse}
               {...props}
@@ -66,7 +94,8 @@ class App extends React.Component {
           path="/course"
           render={props => (
             <ManageCoursePage
-              authors={this.state.authors}
+              authors={authors}
+              loadCourseById={this.loadCourseById}
               loadAuthors={this.loadAuthors}
               saveCourse={this.onSaveCourse}
               {...props}

@@ -2,8 +2,6 @@ import React from "react";
 import PropTypes from "prop-types";
 import { Redirect } from "react-router-dom";
 import CourseForm from "./CourseForm";
-import { getCourseById } from "../../api/mockCourseApi";
-
 import toastr from "toastr";
 
 export class ManageCoursePage extends React.Component {
@@ -29,7 +27,7 @@ export class ManageCoursePage extends React.Component {
     if (this.props.authors.length === 0) this.props.loadAuthors();
     const courseId = this.props.match.params.id; // from the path `/course/:id`
     if (courseId) {
-      getCourseById(courseId).then(course => {
+      this.props.loadCourseById(courseId).then(course => {
         this.setState({ course });
       });
     }
@@ -103,6 +101,7 @@ export class ManageCoursePage extends React.Component {
 ManageCoursePage.propTypes = {
   authors: PropTypes.array.isRequired,
   loadAuthors: PropTypes.func.isRequired,
+  loadCourseById: PropTypes.func.isRequired,
   saveCourse: PropTypes.func.isRequired
 };
 
